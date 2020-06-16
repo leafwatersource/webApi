@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<AppConfig>
+	<Connection datasource ="121.201.33.122,3183">
+		<Modeler username ="APSUSER_RATETEC" password="Szrate8520++----++" security="Persist Security Info=True" muti ="MultiSubnetFailover=True" >mod_test</Modeler>
+		<Schedule username ="APSUSER_RATETEC" password="Szrate8520++----++" security="Persist Security Info=True" muti ="MultiSubnetFailover=True" >sch_test</Schedule>
+		<Pmcontrol username ="APSUSER_RATETEC" password="Szrate8520++----++" security="Persist Security Info=True" muti ="MultiSubnetFailover=True" >ctrl_test</Pmcontrol>
+	</Connection>
+	<LoginSettings>
+		<LoginName name="EmpID" />
+		<ViewSysCol name ="comment"/>
+	</LoginSettings>
+
+</AppConfig>
