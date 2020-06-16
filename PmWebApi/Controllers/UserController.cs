@@ -116,7 +116,7 @@ namespace PmWebApi.Controllers
     }
     [Route("api/[controller]")]
     [ApiController]
-    public class ChangeUserMessage:ControllerBase
+    public class ChangeUserMessage : ControllerBase
     {
         /// <summary>
         /// 修改用户信息
@@ -137,6 +137,24 @@ namespace PmWebApi.Controllers
             {
                 return Ok(-1);
             }
+        }
+    }
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UserHaveLogin : ControllerBase
+    {
+        /// <summary>
+        /// 判断用户是否被强制登陆
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="userGuid"></param>
+        /// <returns></returns>
+        [EnableCors]
+        [HttpPost]
+        public ActionResult Action([FromForm]string username, [FromForm]string userGuid)
+        {
+            User user = new User();
+            return Ok(user.HasLogin(username,userGuid));
         }
     }
 }
