@@ -145,5 +145,32 @@ namespace PmWebApi.Models
             
             return false;
         }
+        public Boolean updateAllUser()
+        {
+            DataTable table = new DataTable();
+            SqlCommand cmd = PmConnections.ModCmd();
+            cmd.CommandText = "select * from wapEmpList where password=''";
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            da.Fill(table);
+            cmd.Connection.Close();
+            da.Dispose();
+            string pass = "111";
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                string aaa = table.Rows[i]["empID"].ToString();
+                string passworld = GetSafePass(table.Rows[i]["empID"].ToString(), pass);
+                table.Rows[i]["password"] = passworld;
+            }
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                SqlCommand change = PmConnections.ModCmd();
+                string newPass = table.Rows[i]["password"].ToString();
+                string userName = table.Rows[i]["empID"].ToString();
+                change.CommandText = "update wapEmpList set password = '"+ newPass + "' where empID = '"+ userName + "'";
+                int count = change.ExecuteNonQuery();
+                change.Connection.Close();
+            }
+            return true;
+        }
     }
 }

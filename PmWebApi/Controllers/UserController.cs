@@ -157,4 +157,16 @@ namespace PmWebApi.Controllers
             return Ok(user.HasLogin(username,userGuid));
         }
     }
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ChangeAllPass : ControllerBase
+    {
+        [EnableCors]
+        [HttpPost]
+        public ActionResult Action()
+        {
+            User user = new User();
+            return Ok(user.updateAllUser());
+        }
+    }
 }
