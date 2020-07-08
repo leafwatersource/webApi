@@ -2,24 +2,21 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PmWebApi.Classes.StaticClasses
 {
     public static class GetUserLoginState
-    {        
+    {
         public static bool LoginState(IHeaderDictionary header)
         {
             JObject jObject;
             if (header.ContainsKey("token"))
             {
-                jObject = JsonConvert.DeserializeObject<JObject>(header["token"].ToString());
+                jObject = JsonConvert.DeserializeObject<JObject>(header["token"]);
                 CUserToken.UserEmpID = jObject.GetValue("UserEmpID").ToString();
                 CUserToken.UserGuid = jObject.GetValue("UserGuid").ToString();
             }
@@ -29,7 +26,7 @@ namespace PmWebApi.Classes.StaticClasses
                 string[] sss = header["Cookie"].ToString().Split(';');
                 CUserToken.UserEmpID = sss[0].Split('=')[1];
                 CUserToken.UserGuid = sss[1].Split('=')[1];
-            }           
+            }
 
             if (CUserInfo.LogedUserInfo == null)
             {
@@ -57,10 +54,10 @@ namespace PmWebApi.Classes.StaticClasses
         /// <param name="tablename">数据库名称</param>
         /// <param name="key">数据库的KEY字段</param>
         /// <returns></returns>
-        public static int GetMaxUID(string serverdb,string tablename,string key)
+        public static int GetMaxUID(string serverdb, string tablename, string key)
         {
             SqlCommand cmd = null;
-            if(serverdb.ToUpper() == "S")
+            if (serverdb.ToUpper() == "S")
             {
                 cmd = PmConnections.SchCmd();
             }
@@ -68,7 +65,7 @@ namespace PmWebApi.Classes.StaticClasses
             {
                 cmd = PmConnections.ModCmd();
             }
-            else if(serverdb.ToUpper() == "C")
+            else if (serverdb.ToUpper() == "C")
             {
                 cmd = PmConnections.CtrlCmd();
             }
@@ -78,7 +75,7 @@ namespace PmWebApi.Classes.StaticClasses
             rd.Read();
             int R = Convert.ToInt32(rd[0]);
             rd.Close();
-            if(R == 0)
+            if (R == 0)
             {
                 return 1;
             }
@@ -89,7 +86,7 @@ namespace PmWebApi.Classes.StaticClasses
                 rd.Read();
                 int maxid = Convert.ToInt32(rd[0]) + 1;
                 return maxid;
-            }            
+            }
         }
         /// <summary>
         /// 对字符串生成MD5码
@@ -111,7 +108,7 @@ namespace PmWebApi.Classes.StaticClasses
         public static string GetSysName(int sysID)
         {
             SqlCommand cmd = PmConnections.ModCmd();
-            cmd.CommandText = "SELECT "+PmSettings.SysNameColName+" FROM pmSysList WHERE sysID = '" + sysID + "'";
+            cmd.CommandText = "SELECT " + PmSettings.SysNameColName + " FROM pmSysList WHERE sysID = '" + sysID + "'";
             SqlDataReader rd = cmd.ExecuteReader();
             string sysname = string.Empty;
             if (rd.Read())
@@ -133,7 +130,7 @@ namespace PmWebApi.Classes.StaticClasses
             for (int i = 0; i < table.Columns.Count; i++)
             {
                 string datatype = table.Columns[i].DataType.ToString().ToUpper();
-                if(datatype == "SYSTEM.INT32" || datatype == "SYSTEM.INT64")
+                if (datatype == "SYSTEM.INT32" || datatype == "SYSTEM.INT64")
                 {
                     try
                     {
@@ -145,7 +142,7 @@ namespace PmWebApi.Classes.StaticClasses
                         data[i] = -1;
                     }
                 }
-                if(datatype == "SYSTEM.DATETIME")
+                if (datatype == "SYSTEM.DATETIME")
                 {
                     try
                     {
@@ -157,7 +154,7 @@ namespace PmWebApi.Classes.StaticClasses
                         data[i] = Convert.ToDateTime("1900-01-01 00:00:00");
                     }
                 }
-                if(datatype == "SYSTEM.DECIMAL")
+                if (datatype == "SYSTEM.DECIMAL")
                 {
                     try
                     {
@@ -169,7 +166,7 @@ namespace PmWebApi.Classes.StaticClasses
                         data[i] = -0.00;
                     }
                 }
-                if(datatype == "SYSTEM.BOOLEAN")
+                if (datatype == "SYSTEM.BOOLEAN")
                 {
                     try
                     {
@@ -236,6 +233,143 @@ namespace PmWebApi.Classes.StaticClasses
                 returndata = "1900/01/01 00:00:00";
             }
             return returndata;
+        }
+        /// <summary>
+        /// 获取这个设备当前时间的Dailydate
+        /// </summary>
+        /// <param name="resname"></param>
+        /// <returns></returns>
+        public static DateTime GetDailyDate(string resname)
+        {
+            if (string.IsNullOrWhiteSpace(resname))
+            {
+                return DateTime.MinValue;
+            }
+            else
+            {
+                string realResname;
+                if (resname.Contains(":"))
+                {
+                    realResname = resname.Split(':')[0];
+                }
+                else
+                {
+                    realResname = resname;
+                }
+                SqlCommand cmd = PmConnections.ModCmd();
+                cmd.CommandText = "SELECT a.resourceName,b.shiftStartTime,c.fromHour,c.toHour,c.workdayInWeek,c.workshift " +
+                                  "FROM objResource a,objCalendar b,objCalendarWorking c " +
+                                  "WHERE a.calendarUID = c.calendarUID and b.calendarUID = c.calendarUID  and a.resourceName = '" + realResname + "' and a.sysID = '" + PmUser.UserSysID + "'" +
+                                  "ORDER by c.workdayInWeek,c.workShift";
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dtshift = new DataTable();
+                da.Fill(dtshift);
+                cmd.Connection.Close();
+                if (dtshift.Rows.Count > 0)
+                {
+                    int calstarthour = Convert.ToInt32(dtshift.Rows[0]["shiftStartTime"].ToString().Split(',')[0].Split(':')[0]);
+                    int nowhour = DateTime.Now.Hour;
+                    int[] Day = new int[] { 0, 1, 2, 3, 4, 5, 6 };
+                    int week = Day[Convert.ToInt32(DateTime.Now.DayOfWeek.ToString("d"))];
+                    DataRow[] drselect = dtshift.Select("workdayInWeek = '" + week + "' and workshift = 1");
+                    int realstarthour = calstarthour + Convert.ToInt32(drselect[0]["fromHour"]);
+                    if (nowhour < realstarthour)
+                    {
+                        return DateTime.Now.AddDays(-1);
+                    }
+                    else
+                    {
+                        return DateTime.Now;
+                    }
+                }
+                else
+                {
+                    return DateTime.MinValue;
+                }
+            }
+            
+        }
+        /// <summary>
+        /// 获取当前设备的DayShift
+        /// </summary>
+        /// <param name="resName"></param>
+        /// <returns></returns>
+        public static int GetDayShift(string resName)
+        {
+            SqlCommand cmd = PmConnections.SchCmd();
+            cmd.CommandText = "SELECT Distinct(pmResName),shiftStartEndTime,dayShift FROM User_MesDailyData where sysID = " + PmUser.UserSysID + " and pmResName = '" + resName + "' and  mesdailydate ='" + GetDailyDate(resName).Date + "' order by dayShift";
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            DataTable dtshift = new DataTable();
+            da.Fill(dtshift);
+            cmd.Connection.Close();
+            if (dtshift.Rows.Count > 0)
+            {
+                if (dtshift.Rows.Count == 1)
+                {
+                    return Convert.ToInt32(dtshift.Rows[0]["dayShift"]);
+                }
+                else
+                {
+                    DataTable dtstarthours = new DataTable();
+                    dtstarthours.Columns.Add("WorkShift");
+                    dtstarthours.Columns.Add("StartHour");
+                    dtstarthours.Columns.Add("EndHour");
+                    for (int i = 0; i < dtshift.Rows.Count; i++)
+                    {
+                        DataRow dr = dtstarthours.NewRow();
+                        if(i< dtshift.Rows.Count  - 1)
+                        {
+                            dr[0] = dtshift.Rows[i]["dayShift"];
+                            dr[1] = dtshift.Rows[i]["shiftStartEndTime"].ToString().Split(',')[0].Split(':')[0];
+                            dr[2] = dtshift.Rows[i + 1]["shiftStartEndTime"].ToString().Split(',')[0].Split(':')[0];
+                        }
+                        else
+                        {
+                            dr[0] = dtshift.Rows[i]["dayShift"];
+                            dr[1] = dtshift.Rows[i]["shiftStartEndTime"].ToString().Split(',')[0].Split(':')[0];
+                            dr[2] = dtshift.Rows[0]["shiftStartEndTime"].ToString().Split(',')[0].Split(':')[0];
+                        }                      
+                        dtstarthours.Rows.Add(dr);
+                    }
+                    int nowhour = DateTime.Now.Hour;
+                    int dayshift = -1;
+                    for (int i = 0; i < dtstarthours.Rows.Count; i++)
+                    {
+                        int calstart = Convert.ToInt32(dtstarthours.Rows[i][1]);
+                        int calend = Convert.ToInt32(dtstarthours.Rows[i][2]);
+                        if (calstart < calend)
+                        {
+                            if (calstart <= nowhour && calend > nowhour)
+                            {
+                                dayshift = Convert.ToInt32(dtstarthours.Rows[i][0]);
+                                break;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            if (calstart <= nowhour || calend > nowhour)
+                            {
+                                dayshift = Convert.ToInt32(dtstarthours.Rows[i][0]);
+                                break;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                    }
+                    return dayshift;
+
+                }                
+            }
+            else
+            {
+                return -1;
+            }
         }
     }
 }

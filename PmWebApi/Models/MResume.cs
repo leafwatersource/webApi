@@ -1,11 +1,7 @@
 ﻿using Newtonsoft.Json;
 using PmWebApi.Classes;
 using PmWebApi.Classes.StaticClasses;
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PmWebApi.Models
 {

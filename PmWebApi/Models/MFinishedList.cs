@@ -13,7 +13,7 @@ namespace PmWebApi.Models
         {
             SqlCommand cmd = PmConnections.SchCmd();
 
-            cmd.CommandText = "SELECT * FROM User_MesDailyData WHERE pmResName = '" + resName + "' and datatype = 'P' and dailyDate >='" + DateTime.Now + "' and TaskFinishState = '4'ORDER BY dailyDate,planStartTime";
+            cmd.CommandText = "SELECT * FROM User_MesDailyData WHERE pmResName = '" + resName + "' and datatype = 'P' and mesdailyDate ='" + PublicFunc.GetDailyDate(resName) + "' and TaskFinishState = '4' and dayShift = '" + PublicFunc.GetDayShift(resName) + "' ORDER BY mesdailyDate,planStartTime";
             //cmd.CommandText = "SELECT * FROM User_MesDailyData WHERE pmResName = '" + resName + "' and datatype = 'P'and TaskFinishState < '4' ORDER BY dailyDate,planStartTime";
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             DataTable returndata = new DataTable();
@@ -42,25 +42,29 @@ namespace PmWebApi.Models
                         PmOpName = checkeddata["PmOpName"].ToString(),
                         ProductID = checkeddata["ProductID"].ToString(),
                         TaskFinishState = Convert.ToInt32(checkeddata["TaskFinishState"]),
-                        FinishedQty = Convert.ToDecimal(checkeddata["FinishedQty"]),
-                        Plannedqty = Convert.ToDecimal(checkeddata["Plannedqty"]),
-                        FailedQty = Convert.ToDecimal(checkeddata["FailQty"]),
-                        AllFinishedQty = Convert.ToDecimal(checkeddata["AllFinishedQty"]),
-                        JobQty = Convert.ToDecimal(checkeddata["JobQty"]),
+                        FinishedQty = Convert.ToDouble(checkeddata["FinishedQty"]),
+                        Plannedqty = Convert.ToDouble(checkeddata["Plannedqty"]),
+                        FailedQty = Convert.ToDouble(checkeddata["FailQty"]),
+                        AllFinishedQty = Convert.ToDouble(checkeddata["AllFinishedQty"]),
+                        JobQty = Convert.ToDouble(checkeddata["JobQty"]),
                         ItemAttr1 = checkeddata["ItemAttr1"].ToString(),
                         ItemAttr2 = checkeddata["ItemAttr2"].ToString(),
                         ItemAttr3 = checkeddata["ItemAttr3"].ToString(),
                         ItemAttr4 = checkeddata["ItemAttr4"].ToString(),
                         DayShift = Convert.ToInt32(checkeddata["DayShift"]),
                         ItemDesp = checkeddata["itemDesp"].ToString(),
-                        WorkHours = Convert.ToDecimal(checkeddata["workHour"]),
-                        SetupTime = Convert.ToDecimal(checkeddata["setupTime"]),
+                        WorkHours = Convert.ToDouble(checkeddata["workHour"]),
+                        SetupTime = Convert.ToDouble(checkeddata["setupTime"]),
                         OrderUID = Convert.ToInt32(checkeddata["UID"]),
-                        BomComused = Convert.ToDecimal(checkeddata["AllJobTaskqty"]) / Convert.ToDecimal(checkeddata["JobQty"]),
+                        BomComused = Convert.ToDouble(checkeddata["AllJobTaskqty"]) / Convert.ToDouble(checkeddata["JobQty"]),
                         CanReport = true,
-                        CanReportQty = Convert.ToDecimal(checkeddata["AllJobTaskqty"]) - Convert.ToDecimal(checkeddata["AllFinishedQty"]),
+                        CanReportQty = Convert.ToDouble(checkeddata["AllJobTaskqty"]) - Convert.ToDouble(checkeddata["AllFinishedQty"]) - Convert.ToDouble(checkeddata["FailQty"]),
                         ChangeResName = string.Empty,
-                        ReportTime = Convert.ToDateTime(checkeddata["updateDatetime"])
+                        ReportTime = Convert.ToDateTime(checkeddata["updateDatetime"]),
+                        JobDemandDay = Convert.ToDateTime(checkeddata["jobDemandDay"]),
+                        ScrappedQty = Convert.ToDouble(checkeddata["ScrappedQty"]),
+                        Ajustment = Convert.ToBoolean(checkeddata["adjustment"]),
+                        UnitPrice = Convert.ToDouble(checkeddata["unitPrice"])
                     };
                     LiReturnData.Add(li);
 

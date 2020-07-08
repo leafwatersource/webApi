@@ -1,18 +1,31 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using PmWebApi.Classes;
 using PmWebApi.Classes.StaticClasses;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PmWebApi.Models
 {
     public class User
     {
+        public bool UpdateUserinfo(string userinfo)
+        {
+            CUserInfo mesEvent = JsonConvert.DeserializeObject<CUserInfo>(userinfo);
+            SqlCommand cmd = PmConnections.ModCmd();
+            cmd.CommandText = "UPDATE wapEmpList SET phoneNum = '" + mesEvent.PhoneNumber + "',email = '" + mesEvent.Email + "' WHERE SYSID = '" + mesEvent.UserSysID + "' and empid = '" + mesEvent.EmpID + "'";
+            int result = cmd.ExecuteNonQuery();
+            if(result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         public DataTable GetUserLog(string empid,string startTime,string endTime)
         {
             DataTable table = new DataTable();
@@ -49,29 +62,29 @@ namespace PmWebApi.Models
             }
             return false;
         }
-        public void WriteLog(string empID,string empName)
+        //public void WriteLog(string empID, string empName)
+        //{
+        //    写入登录日志
+        //    SqlCommand cmd = PmConnections.CtrlCmd();
+        //    cmd.Parameters.Add("@empID", SqlDbType.VarChar).Value = empID;
+        //    cmd.Parameters.Add("@empName", SqlDbType.VarChar).Value = empName;
+        //    cmd.Parameters.Add("@ipaddress", SqlDbType.VarChar).Value = ipaddress;
+        //    cmd.Parameters.Add("@model", SqlDbType.VarChar).Value = model;
+        //    cmd.Parameters.Add("@time", SqlDbType.DateTime).Value = time;
+        //    cmd.Parameters.Add("@message", SqlDbType.VarChar).Value = message;
+        //    cmd.Parameters.Add("@webinfo", SqlDbType.VarChar).Value = webinfo;
+        //    cmd.CommandText = "insert into wapUserlog (empID,empName,ipAddress,model,logtime,logmessage,webinfomation) values (@empID,@empName,@ipaddress,@model,@time,@message,@webinfo)";
+        //    cmd.ExecuteNonQuery();
+        //    cmd.Connection.Close();
+        //}
+        public Boolean ChangePass(string empid, string oldpass,string newPass)
         {
-            //写入登录日志
-            //SqlCommand cmd = PmConnections.CtrlCmd();
-            //cmd.Parameters.Add("@empID", SqlDbType.VarChar).Value = empID;
-            //cmd.Parameters.Add("@empName", SqlDbType.VarChar).Value = empName;
-            //cmd.Parameters.Add("@ipaddress", SqlDbType.VarChar).Value = ipaddress;
-            //cmd.Parameters.Add("@model", SqlDbType.VarChar).Value = model;
-            //cmd.Parameters.Add("@time", SqlDbType.DateTime).Value = time;
-            //cmd.Parameters.Add("@message", SqlDbType.VarChar).Value = message;
-            //cmd.Parameters.Add("@webinfo", SqlDbType.VarChar).Value = webinfo;
-            //cmd.CommandText = "insert into wapUserlog (empID,empName,ipAddress,model,logtime,logmessage,webinfomation) values (@empID,@empName,@ipaddress,@model,@time,@message,@webinfo)";
-            //cmd.ExecuteNonQuery();
-            //cmd.Connection.Close();
-        }
-        public Boolean ChangePass(string oldpass,string newPass)
-        {
-            string pass = GetSafePass(PmUser.EmpID.ToString(), newPass);
-            string olpass = GetSafePass(PmUser.EmpID.ToString(), oldpass);
-            Boolean canChange = CanChangePass(olpass);
+            string pass = GetSafePass(empid, newPass);
+            string olpass = GetSafePass(empid, oldpass);
+            Boolean canChange = CanChangePass(empid,olpass);
             if (canChange) {
                 SqlCommand cmd = PmConnections.ModCmd();
-                cmd.CommandText = "update wapEmpList set password ='" + pass + "' where empID = '" + PmUser.EmpID + "'";
+                cmd.CommandText = "update wapEmpList set password ='" + pass + "' where empID = '" + empid + "'";
                 int count = cmd.ExecuteNonQuery();
                 cmd.Connection.Close();
                 if (count > 0)
@@ -91,7 +104,6 @@ namespace PmWebApi.Models
             SqlCommand cmd = PmConnections.CtrlCmd();
             cmd.CommandText = "select count(empID) from wapUserstate where empID = '" + userName + "' and userGuid = '" + userGuid + "'";
             //int count = Convert.ToInt32(cmd.ExecuteReader());
-            string aa = cmd.ExecuteScalar().ToString();
             int count = Convert.ToInt32( cmd.ExecuteScalar());
             cmd.Connection.Close();
             if (count > 0)
@@ -100,9 +112,9 @@ namespace PmWebApi.Models
             }
             return false;
         }
-        public bool CanChangePass(string password) {
+        public bool CanChangePass(string empid, string password) {
             SqlCommand cmd = PmConnections.ModCmd();
-            cmd.CommandText = "select count(*) from wapEmpList where empID = '" + PmUser.EmpID + "' and password = '" + password + "'";
+            cmd.CommandText = "select count(*) from wapEmpList where empID = '" + empid + "' and password = '" + password + "'";
             int count = Convert.ToInt32(cmd.ExecuteScalar());
             cmd.Connection.Close();
             if (count > 0)
@@ -124,53 +136,6 @@ namespace PmWebApi.Models
                 userPass += s[i].ToString("X");
             }
             return userPass;
-        }
-        public Boolean UserMessage(string userobj) {
-            try
-            {
-                SqlCommand cmd = PmConnections.ModCmd();
-                JObject userObject = JObject.Parse(userobj);
-                cmd.CommandText = "update wapEmpList set empName = '" + userObject["empName"] + "' , dept = '" + userObject["dept"] + "' , phoneNum = '" + userObject["phoneNum"] + "' , email = '" + userObject["email"] + "' where empID = '" + PmUser.EmpID + "'";
-                int count = cmd.ExecuteNonQuery();
-                if (count > 0)
-                {
-                    return true;
-                }
-            }
-            catch (Exception)
-            {
-
-                return false;
-            }
-            
-            return false;
-        }
-        public Boolean updateAllUser()
-        {
-            DataTable table = new DataTable();
-            SqlCommand cmd = PmConnections.ModCmd();
-            cmd.CommandText = "select * from wapEmpList where password=''";
-            SqlDataAdapter da = new SqlDataAdapter(cmd);
-            da.Fill(table);
-            cmd.Connection.Close();
-            da.Dispose();
-            string pass = "111";
-            for (int i = 0; i < table.Rows.Count; i++)
-            {
-                string aaa = table.Rows[i]["empID"].ToString();
-                string passworld = GetSafePass(table.Rows[i]["empID"].ToString(), pass);
-                table.Rows[i]["password"] = passworld;
-            }
-            for (int i = 0; i < table.Rows.Count; i++)
-            {
-                SqlCommand change = PmConnections.ModCmd();
-                string newPass = table.Rows[i]["password"].ToString();
-                string userName = table.Rows[i]["empID"].ToString();
-                change.CommandText = "update wapEmpList set password = '"+ newPass + "' where empID = '"+ userName + "'";
-                int count = change.ExecuteNonQuery();
-                change.Connection.Close();
-            }
-            return true;
         }
     }
 }

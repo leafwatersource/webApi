@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using PmWebApi.Classes;
 using PmWebApi.Classes.StaticClasses;
 using PmWebApi.Models;
 
@@ -47,7 +38,22 @@ namespace PmWebApi.Controllers
             if (GetUserLoginState.LoginState(Request.Headers))
             {
                 MChangeRes changeRes = new MChangeRes();
-                return Ok(changeRes.GetCanResList_Call(bean));
+                List<string> reslist = changeRes.GetCanResList_Call(bean);
+                if(reslist == null)
+                {
+                    return Ok(-2);
+                }
+                else
+                {
+                    if(reslist.Count <1)
+                    {
+                        return Ok(-2);
+                    }
+                    else
+                    {
+                        return Ok(reslist);
+                    }
+                }
             }
             else
             {               

@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 using PmWebApi.Classes.StaticClasses;
 using PmWebApi.Models;
 
@@ -22,7 +16,14 @@ namespace PmWebApi.Controllers
             if (GetUserLoginState.LoginState(Request.Headers))
             {
                 MFinishedList mUnStart = new MFinishedList();
-                return Ok(mUnStart.GetFinishedOrderList(resName));
+                if(mUnStart.GetFinishedOrderList(resName) != null)
+                {
+                    return Ok(mUnStart.GetFinishedOrderList(resName));
+                }
+                else
+                {
+                    return Ok(-2);
+                }
             }
             else
             {                

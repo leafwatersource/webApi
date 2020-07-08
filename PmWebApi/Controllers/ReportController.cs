@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
+﻿using Microsoft.AspNetCore.Mvc;
 using PmWebApi.Classes.StaticClasses;
 using PmWebApi.Models;
 
@@ -92,6 +86,41 @@ namespace PmWebApi.Controllers
             }
             else
             {               
+                return Ok(-1);
+            }
+        }
+    }
+    [Route("api/[controller]")]
+    [ApiController]
+    public class EndWorkingController : ControllerBase
+    {
+        public IActionResult Result([FromForm] string bean)
+        {
+            if (GetUserLoginState.LoginState(Request.Headers))
+            {
+                MEndWork mEnd = new MEndWork();
+                bool result = mEnd.EndWork(bean);
+                return Ok(result);
+            }
+            else
+            {
+                return Ok(-1);
+            }
+        }
+    }
+    [Route("api/[controller]")]
+    [ApiController]
+    public class OrderAjustmentController : ControllerBase
+    {
+        public IActionResult Result([FromForm] string bean)
+        {
+            if (GetUserLoginState.LoginState(Request.Headers))
+            {
+                MOrderAjustment ajustment = new MOrderAjustment();                
+                return Ok(ajustment.OrderAjustmest_Call(bean));
+            }
+            else
+            {
                 return Ok(-1);
             }
         }

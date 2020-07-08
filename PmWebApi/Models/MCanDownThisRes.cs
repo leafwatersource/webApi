@@ -4,26 +4,94 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PmWebApi.Models
 {
     public class MCanDownThisRes
     {
-        public List<COrderList> CanDownThisRes_Call (string resname)
+        public List<COrderList> CanDownThisRes_Call (string resname,int dayshift)
         {
             SqlCommand cmd = PmConnections.SchCmd();
-            cmd.CommandText = "SELECT * FROM User_MesDailyData WHERE  resCanUsed like '%"+ resname.Split(':')[0] +"%' and datatype = 'P' and dailyDate >='" + DateTime.Now + "' and TaskFinishState < '4' and pmresname != '"+ resname +"' ORDER BY pmresname, dailyDate,planStartTime";
+            cmd.CommandText = "SELECT * FROM User_MesDailyData WHERE  resCanUsed like '%"+ resname.Split(':')[0] +"%' and datatype = 'P' and dailyDate >='" + DateTime.Now + "' and TaskFinishState < '4' ORDER BY workid,productid,pmresname,pmopname,PlanStartTime Desc";
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             DataTable data = new DataTable();
             da.Fill(data);
             da.Dispose();
             cmd.Connection.Close();
-            List<COrderList> orderlist = new List<COrderList>();
-            if(data.Rows.Count > 0)
+
+            //对拉取过来的数据去重
+            DataTable newdata = data.Clone();
+            string thisworkid, nextworkid;
+            string thisproduct, nextproduct;
+            string thisresname, nextresname;
+            string thisopname, nextopname;
+            for (int i = 0; i < data.Rows.Count -1; i++)
             {
-                foreach (DataRow item in data.Rows)
+                if(data.Rows[i]["pmresname"].ToString() == resname && Convert.ToDateTime(data.Rows[i]["mesdailydate"]).Date == DateTime.Now.Date && Convert.ToInt32(data.Rows[i]["dayshift"]) == dayshift)
+                {
+                    continue;
+                }
+                thisworkid = data.Rows[i]["workid"].ToString();
+                nextworkid = data.Rows[i + 1]["workid"].ToString();
+                if(thisworkid == nextworkid)
+                {
+                    //工单一样,比较产品是否一样
+                    thisproduct = data.Rows[i]["productid"].ToString();
+                    nextproduct = data.Rows[i + 1]["productid"].ToString();
+
+                    if(thisproduct == nextproduct)
+                    {
+                        //产品一样 比较设备是否一样
+                        thisresname = data.Rows[i]["pmresname"].ToString();
+                        nextresname = data.Rows[i + 1]["pmresname"].ToString();
+                        if(thisresname == nextresname)
+                        {
+                            //如果设备一样,比较工序是否一样
+                            thisopname = data.Rows[i]["pmopname"].ToString();
+                            nextopname = data.Rows[i + 1]["pmopname"].ToString();
+                            if(thisopname == nextopname)
+                            {
+                                continue;
+                            }
+                            else
+                            {
+                                DataRow dr = newdata.NewRow();
+                                dr.ItemArray = data.Rows[i].ItemArray;
+                                newdata.Rows.Add(dr);
+                            }
+                        }
+                        else
+                        {
+                            //设备不一样 添加
+                            DataRow dr = newdata.NewRow();
+                            dr.ItemArray = data.Rows[i].ItemArray;
+                            newdata.Rows.Add(dr);
+                        }
+                    }
+                    else
+                    {
+                        //如果产品不一样,添加
+                        DataRow dr = newdata.NewRow();
+                        dr.ItemArray = data.Rows[i].ItemArray;
+                        newdata.Rows.Add(dr);
+                    }
+                }
+                else
+                {
+                    //工单不一样,直接添加
+                    DataRow dr = newdata.NewRow();
+                    dr.ItemArray = data.Rows[i].ItemArray;
+                    newdata.Rows.Add(dr);
+                }
+            }
+            DataView dv = newdata.DefaultView;
+            dv.Sort = "PlanStartTime ASC";
+            newdata = dv.ToTable();
+
+            List<COrderList> orderlist = new List<COrderList>();
+            if(newdata.Rows.Count > 0)
+            {
+                foreach (DataRow item in newdata.Rows)
                 {
                     DataRow checkeddata = PublicFunc.CheckEmptyVal(data, item);
                     COrderList cOrder = new COrderList()
@@ -38,23 +106,23 @@ namespace PmWebApi.Models
                         PmOpName = checkeddata["PmOpName"].ToString(),
                         ProductID = checkeddata["ProductID"].ToString(),
                         TaskFinishState = Convert.ToInt32(checkeddata["TaskFinishState"]),
-                        FinishedQty = Convert.ToDecimal(checkeddata["FinishedQty"]),
-                        Plannedqty = Convert.ToDecimal(checkeddata["Plannedqty"]),
-                        FailedQty = Convert.ToDecimal(checkeddata["FailQty"]),
-                        AllFinishedQty = Convert.ToDecimal(checkeddata["AllFinishedQty"]),
-                        JobQty = Convert.ToDecimal(checkeddata["JobQty"]),
+                        FinishedQty = Convert.ToDouble(checkeddata["FinishedQty"]),
+                        Plannedqty = Convert.ToDouble(checkeddata["Plannedqty"]),
+                        FailedQty = Convert.ToDouble(checkeddata["FailQty"]),
+                        AllFinishedQty = Convert.ToDouble(checkeddata["AllFinishedQty"]),
+                        JobQty = Convert.ToDouble(checkeddata["JobQty"]),
                         ItemAttr1 = checkeddata["ItemAttr1"].ToString(),
                         ItemAttr2 = checkeddata["ItemAttr2"].ToString(),
                         ItemAttr3 = checkeddata["ItemAttr3"].ToString(),
                         ItemAttr4 = checkeddata["ItemAttr4"].ToString(),
                         DayShift = Convert.ToInt32(checkeddata["DayShift"]),
                         ItemDesp = checkeddata["itemDesp"].ToString(),
-                        WorkHours = Convert.ToDecimal(checkeddata["workHour"]),
-                        SetupTime = Convert.ToDecimal(checkeddata["setupTime"]),
+                        WorkHours = Convert.ToDouble(checkeddata["workHour"]),
+                        SetupTime = Convert.ToDouble(checkeddata["setupTime"]),
                         OrderUID = Convert.ToInt32(checkeddata["UID"]),
-                        BomComused = Convert.ToDecimal(checkeddata["AllJobTaskqty"]) / Convert.ToDecimal(checkeddata["JobQty"]),
+                        BomComused = Convert.ToDouble(checkeddata["AllJobTaskqty"]) / Convert.ToDouble(checkeddata["JobQty"]),
                         CanReport = true,
-                        CanReportQty = Convert.ToDecimal(checkeddata["AllJobTaskqty"]) - Convert.ToDecimal(checkeddata["AllFinishedQty"]),
+                        CanReportQty = Convert.ToDouble(checkeddata["AllJobTaskqty"]) - Convert.ToDouble(checkeddata["AllFinishedQty"]),
                         ChangeResName = string.Empty
                     };
                     orderlist.Add(cOrder);
@@ -86,13 +154,14 @@ namespace PmWebApi.Models
                     }
                 }
             }
+            //处理重复的数据 
             return orderlist;
         }
 
         public bool BeginDown_Call(string orderuid,string resName,string dayshift)
         {
             SqlCommand cmd = PmConnections.SchCmd();
-            cmd.CommandText = "UPDATE User_MesDailyData SET pmresname = '" + resName + "', updateDatetime ='" + DateTime.Now + "', bgPerson = '" + PmUser.UserName+ "',dayShift = '"+dayshift + "' WHERE  UID = '" + orderuid+"'";
+            cmd.CommandText = "UPDATE User_MesDailyData SET pmresname = '" + resName + "', updateDatetime ='" + DateTime.Now + "', bgPerson = '" + PmUser.UserName + "',dayShift = '" + dayshift + "',mesdailydate = '" + DateTime.Now.Date + "' WHERE  UID = '" + orderuid + "'";
             int result = cmd.ExecuteNonQuery();
             cmd.Connection.Close();
             if(result == 1)

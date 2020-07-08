@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PmWebApi.Classes
 {
@@ -14,7 +11,7 @@ namespace PmWebApi.Classes
         public string Planendtime { get; set; }
         public string WorkID { get; set; }
         public string PmOpName { get; set; }
-        public decimal FinishedQty { get; set; }
+        public double FinishedQty { get; set; }
         public int TaskFinishState { get; set; }
         public string ItemAttr1 { get; set; }
         public string ItemAttr2 { get; set; }
@@ -22,20 +19,23 @@ namespace PmWebApi.Classes
         public string ItemAttr4 { get; set; }
         public string ProductID { get; set; }
         public string PmResName { get; set; }
-        public decimal JobQty { get; set; }
-        public decimal Plannedqty { get; set; }
-        public decimal AllFinishedQty { get; set; }
-        public decimal FailedQty { get; set; }
-        public decimal ScrappedQty { get; set; }
+        public double JobQty { get; set; }
+        public double Plannedqty { get; set; }
+        public double AllFinishedQty { get; set; }
+        public double FailedQty { get; set; }
+        public double ScrappedQty { get; set; }
         public int DayShift { get; set; }
-        public decimal WorkHours { get; set; }
+        public double WorkHours { get; set; }
         public string ItemDesp { get; set; }
-        public decimal SetupTime { get; set; }
+        public double SetupTime { get; set; }
         public int OrderUID { get; set; }
         public bool CanReport { get; set; }
-        public decimal CanReportQty { get; set; }
-        public decimal BomComused { get; set; }
+        public double CanReportQty { get; set; }
+        public double BomComused { get; set; }
         public DateTime  ReportTime { get; set; }
         public string ChangeResName { get; set; }
+        public DateTime JobDemandDay { get; set; }
+        public bool Ajustment { get; set; }
+        public double UnitPrice { get; set; }
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using PmWebApi.Classes.StaticClasses;
 
 namespace PmWebApi.Classes.StaticClasses
 {
@@ -81,7 +80,7 @@ namespace PmWebApi.Classes.StaticClasses
                 {
                     conn.Open();
                     cmd = conn.CreateCommand();
-                }
+                } 
                 catch (SqlException e)
                 {
                     CErrorMsg error = new CErrorMsg

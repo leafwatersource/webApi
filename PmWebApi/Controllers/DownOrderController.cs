@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
+using PmWebApi.Classes;
 using PmWebApi.Classes.StaticClasses;
 using PmWebApi.Models;
+using System.Collections.Generic;
 
 namespace PmWebApi.Controllers
 {
@@ -9,21 +11,26 @@ namespace PmWebApi.Controllers
     [ApiController]
     public class DownOrderController : ControllerBase
     {
-        public IActionResult Result([FromForm]string resName)
+        [EnableCors]
+        [HttpPost]
+        public IActionResult Result([FromForm] string resName,[FromForm] int dayshift)
         {
             if (GetUserLoginState.LoginState(Request.Headers))
             {
                 MCanDownThisRes downThisRes = new MCanDownThisRes();
-                return Ok(downThisRes.CanDownThisRes_Call(resName));
+                List<COrderList> cOrder = downThisRes.CanDownThisRes_Call(resName,dayshift);
+                if (cOrder != null)
+                {
+                    return Ok(cOrder);
+                }
+                else
+                {
+                    return Ok(-2);
+                }
             }
             else
-            {
-                JObject jObject = new JObject
-                {
-                    { "LoginState", "0" },
-                    { "ErrMsg", "Please Login At Now" }
-                };
-                return Ok(jObject);
+            {               
+                return Ok(-1);
             }
         }
     }
@@ -31,6 +38,8 @@ namespace PmWebApi.Controllers
     [ApiController]
     public class BeginDownController : ControllerBase
     {
+        [EnableCors]
+        [HttpPost]
         public IActionResult Result([FromForm] string resName,[FromForm]string orderUID,[FromForm]string dayshift)
         {
             if (GetUserLoginState.LoginState(Request.Headers))

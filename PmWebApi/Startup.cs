@@ -1,16 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using PmWebApi.Classes.StaticClasses;
 
 namespace PmWebApi
@@ -23,9 +17,7 @@ namespace PmWebApi
             ReadAppConfig();
         }
         public void ReadAppConfig()
-        {
-            // "Mod": "Data Source=PMSER.SZRATETEC.COM,1436;Initial Catalog=MODELER_DB;Persist Security Info=True;User ID=sa ;Password=Szrate8520;MultiSubnetFailover=True;"
-                     //Data Source = PMSER.SZRATETEC.COM,1436; Initial Catalog = MODELER_DB; Persist Security Info = True; User ID = sa; Password = System.Xml.XmlAttribute; MultiSubnetFailover = True
+        {            
             string filepach = AppContext.BaseDirectory;
             XmlDocument document = new XmlDocument();
             document.Load(filepach + "appconfig.xml");
@@ -67,6 +59,25 @@ namespace PmWebApi
                             PmSettings.SysNameColName = settings.Attributes["name"].Value;
                         }
                     }    
+                }
+                if(item.Name.ToUpper() == "USERAPPCONFIG")
+                {
+                    XmlNodeList settingsList = item.ChildNodes;
+                    foreach (XmlNode settings in settingsList)
+                    {
+                        if (settings.Name.ToUpper() == "VERSIONCODE")
+                        {
+                            PmSettings.AppVersion = settings.Attributes["name"].Value;
+                        }                        
+                        if(settings.Name.ToUpper() == "VERSIONGUID")
+                        {
+                            PmSettings.VersionGuid = settings.Attributes["name"].Value;
+                        }
+                        if(settings.Name.ToUpper() == "VERSIONMSG")
+                        {
+                            PmSettings.VersionMsg = settings.Attributes["name"].Value;
+                        }
+                    }
                 }
             }
         }
