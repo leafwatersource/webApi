@@ -75,11 +75,11 @@ namespace PmWebApi.Models
             {
                 PlanStartTime = PublicFunc.ForMatDateTimeStr(planstarttime, 1),
                 PlanEndTime = PublicFunc.ForMatDateTimeStr(planendtime, 1),
-                PlannedHours = plannedhours,
+                PlannedHours = plannedhours*3600,
                 PlannedQty = plannedqty,
                 PlanSetupStartTime = PublicFunc.ForMatDateTimeStr(plansetupstarttime, 1),
                 PlanSetupEndTime = PublicFunc.ForMatDateTimeStr(plansetupendtime, 1),
-                PlannedSetupHours = plannedsetuphours * 60,
+                PlannedSetupHours = plannedsetuphours * 3600,
                 FinishedQty = finishedqty,
                 FailedQty = failedqty
             };
@@ -109,8 +109,8 @@ namespace PmWebApi.Models
                     }
                 }
             }
-            returndata.MesSetupHours = Convert.ToDouble((messetuphours / 60).ToString("0.00"));
-            returndata.MesHours = Convert.ToDouble((meshours / 60).ToString("0.00"));
+            returndata.MesSetupHours = Convert.ToDouble((messetuphours).ToString("0.00"));
+            returndata.MesHours = Convert.ToDouble((meshours).ToString("0.00"));
             return returndata;
         }
     }
