@@ -2,10 +2,12 @@ using System;
 using System.Xml;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PmWebApi.Classes.StaticClasses;
+using PmWebApi.SignalR;
 
 namespace PmWebApi
 {
@@ -17,8 +19,8 @@ namespace PmWebApi
             ReadAppConfig();
         }
         public void ReadAppConfig()
-        {            
-            string filepach = AppContext.BaseDirectory;
+        {
+            string filepach = AppContext.BaseDirectory;            
             XmlDocument document = new XmlDocument();
             document.Load(filepach + "appconfig.xml");
             XmlNode config = document.SelectSingleNode("AppConfig");
@@ -95,8 +97,10 @@ namespace PmWebApi
                      .AllowAnyMethod()
                      .AllowAnyHeader()
                      .AllowCredentials();
+                     
                  });
             });
+            services.AddSignalR();
             services.AddMvcCore().AddNewtonsoftJson(options => {
                 options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
             });
@@ -120,6 +124,13 @@ namespace PmWebApi
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+            app.UseWebSockets();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<RateFactotyChatHub>("/chathub");
             });
         }
 

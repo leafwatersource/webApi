@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PmWebApi.Classes;
 using PmWebApi.Classes.StaticClasses;
 using PmWebApi.Models;
@@ -44,6 +46,10 @@ namespace PmWebApi.Controllers
         {
             if (GetUserLoginState.LoginState(Request.Headers))
             {
+                string UserIP = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+                string UserAgent = Request.Headers["User-Agent"].ToString();
+                string UserEmpID = JsonConvert.DeserializeObject<JObject>(Request.Headers["token"]).GetValue("UserEmpID").ToString();
+                PublicFunc.WriteUserLog(UserEmpID, UserIP, "拉取订单", "拉取订单:" + orderUID + ",到设备:" + resName , UserAgent);
                 MCanDownThisRes downThisRes = new MCanDownThisRes();
                 return Ok(downThisRes.BeginDown_Call(orderuid: orderUID, resName: resName, dayshift:dayshift));
             }

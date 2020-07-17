@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using PmWebApi.Classes;
 using PmWebApi.Classes.StaticClasses;
 using PmWebApi.Models;
 

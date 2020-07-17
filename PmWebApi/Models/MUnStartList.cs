@@ -65,12 +65,21 @@ namespace PmWebApi.Models
                         JobDemandDay = Convert.ToDateTime(checkeddata["jobDemandDay"]),
                         ScrappedQty = Convert.ToDouble(checkeddata["ScrappedQty"]),
                         Ajustment = Convert.ToBoolean(checkeddata["adjustment"]),
-                        UnitPrice = Convert.ToDouble(checkeddata["unitPrice"])
+                        UnitPrice = Convert.ToDouble(checkeddata["unitPrice"]),
+                        MesSetupStartTime = Convert.ToDateTime(checkeddata["setupStartTime"]),
+                        MesSetupEndTime = Convert.ToDateTime(checkeddata["setupEndTime"]),
+                        MesStartTime = Convert.ToDateTime(checkeddata["startDateTime"]),
+                        MesEndTime = Convert.ToDateTime(checkeddata["endDateTime"]),
+                        UserComment = checkeddata["userComment"].ToString()
                     };                    
                     LiReturnData.Add(li);
                    
                 }
-                bool hasoutput = false;
+        //public DateTime MesStartTime { get; set; }
+        //public DateTime MesEndTime { get; set; }
+        //public DateTime MesSetupStartTime { get; set; }
+        //public DateTime MesSetupEndtime { get; set; }
+        bool hasoutput = false;
                 foreach (COrderList c in LiReturnData)
                 {
                     if (c.TaskFinishState != 0 && c.TaskFinishState != 3)

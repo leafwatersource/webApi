@@ -1,6 +1,8 @@
 ﻿using System.Data;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PmWebApi.Classes.StaticClasses;
 using PmWebApi.Models;
 namespace PmWebApi.Controllers
@@ -11,13 +13,13 @@ namespace PmWebApi.Controllers
     {
         [EnableCors]
         [HttpPost]
-        public ActionResult<DataTable> ActionResult([FromForm] string empid)
+        public ActionResult<DataTable> ActionResult([FromForm] string empid,[FromForm] int logtype)
         {
 
             if (GetUserLoginState.LoginState(Request.Headers))
             {
                 User user = new User();
-                return user.GetUserLog(empid, "2019/08/10 00:00:00", "2020/05/25 00:00:00");
+                return user.GetUserLog(empid, logtype);
             }
             else
             {
@@ -80,6 +82,10 @@ namespace PmWebApi.Controllers
 
             if (GetUserLoginState.LoginState(Request.Headers))
             {
+                string UserIP = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+                string UserAgent = Request.Headers["User-Agent"].ToString();
+                string UserEmpID = JsonConvert.DeserializeObject<JObject>(Request.Headers["token"]).GetValue("UserEmpID").ToString();
+                PublicFunc.WriteUserLog(UserEmpID, UserIP, "退出登陆", "退出登陆", UserAgent);
                 User user = new User();
                 return Ok(user.SignOut(empid));
             }
@@ -99,6 +105,10 @@ namespace PmWebApi.Controllers
         {
             if (GetUserLoginState.LoginState(Request.Headers))
             {
+                string UserIP = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+                string UserAgent = Request.Headers["User-Agent"].ToString();
+                string UserEmpID = JsonConvert.DeserializeObject<JObject>(Request.Headers["token"]).GetValue("UserEmpID").ToString();
+                PublicFunc.WriteUserLog(UserEmpID, UserIP, "更改密码", "更改密码为:" + newPass, UserAgent);
                 User user = new User();
                 return Ok(user.ChangePass(empid,oldPass, newPass));
             }

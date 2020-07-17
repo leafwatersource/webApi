@@ -26,18 +26,82 @@ namespace PmWebApi.Models
                 return false;
             }
         }
-        public DataTable GetUserLog(string empid,string startTime,string endTime)
+        public DataTable GetUserLog(string empid,int logtype)
         {
             DataTable table = new DataTable();
-            DateTime start =  Convert.ToDateTime(startTime);
-            DateTime end = Convert.ToDateTime(endTime);
             SqlCommand cmd = PmConnections.CtrlCmd();
-            cmd.CommandText = "select * from wapUserlog where empID = '" + empid + "' and logTime > '" + start + "' and logTime < '" + end + "'";
+            DateTime start;
+            DateTime end;
+            if (logtype == 0)
+            {
+                end = DateTime.Now.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+                start = DateTime.Now.Date;
+                cmd.CommandText = "select * from wapUserlog where empID = '" + empid + "'and logTime >= '" + start + "' and logTime <= '" + end + "' ORDER BY logTime DESC";
+            }
+            else if (logtype == 1)
+            {
+                end = DateTime.Now.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+                start = DateTime.Now.Date.AddDays(-3);
+                cmd.CommandText = "select * from wapUserlog where empID = '" + empid + "' and logTime >= '" + start + "' and logTime <= '" + end + "' ORDER BY logTime DESC";
+            }
+            else if (logtype == 2)
+            {
+                end = DateTime.Now.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+                start = DateTime.Now.Date.AddDays(-7);
+                cmd.CommandText = "select * from wapUserlog where empID = '" + empid + "' and logTime >= '" + start + "' and logTime <= '" + end + "' ORDER BY logTime DESC";
+            }
+            else if (logtype == 3)
+            {
+                end = DateTime.Now.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+                start = DateTime.Now.Date.AddMonths(-1);
+                cmd.CommandText = "select * from wapUserlog where empID = '" + empid + "' and logTime >= '" + start + "' and logTime <= '" + end + "' ORDER BY logTime DESC";
+            }
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             da.Fill(table);
-            cmd.Connection.Close();
             da.Dispose();
+            cmd.Connection.Close();
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                string mobietype = CreateMobelType(table.Rows[i]["webinfomation"].ToString());
+                table.Rows[i]["webinfomation"] = mobietype;
+            }
+            table.AcceptChanges();
             return table;
+        }
+
+        private string CreateMobelType(string webstr)
+        {
+            string str = string.Empty; ;
+            if(webstr.Contains("Mozilla"))
+            {
+                for (int i = webstr.IndexOf("(") + 1; i < webstr.Length; i++)
+                {
+                    if (webstr[i].ToString() == ")")
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        str += webstr[i];
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < webstr.Length; i++)
+                {
+                    if (webstr[i].ToString() == ")")
+                    {
+                        str += webstr[i];
+                        break;
+                    }
+                    else
+                    {
+                        str += webstr[i];
+                    }
+                }
+            }
+            return str;
         }
         public DataTable Operate(string empName)
         {
@@ -62,21 +126,6 @@ namespace PmWebApi.Models
             }
             return false;
         }
-        //public void WriteLog(string empID, string empName)
-        //{
-        //    写入登录日志
-        //    SqlCommand cmd = PmConnections.CtrlCmd();
-        //    cmd.Parameters.Add("@empID", SqlDbType.VarChar).Value = empID;
-        //    cmd.Parameters.Add("@empName", SqlDbType.VarChar).Value = empName;
-        //    cmd.Parameters.Add("@ipaddress", SqlDbType.VarChar).Value = ipaddress;
-        //    cmd.Parameters.Add("@model", SqlDbType.VarChar).Value = model;
-        //    cmd.Parameters.Add("@time", SqlDbType.DateTime).Value = time;
-        //    cmd.Parameters.Add("@message", SqlDbType.VarChar).Value = message;
-        //    cmd.Parameters.Add("@webinfo", SqlDbType.VarChar).Value = webinfo;
-        //    cmd.CommandText = "insert into wapUserlog (empID,empName,ipAddress,model,logtime,logmessage,webinfomation) values (@empID,@empName,@ipaddress,@model,@time,@message,@webinfo)";
-        //    cmd.ExecuteNonQuery();
-        //    cmd.Connection.Close();
-        //}
         public Boolean ChangePass(string empid, string oldpass,string newPass)
         {
             string pass = GetSafePass(empid, newPass);

@@ -17,6 +17,7 @@ namespace PmWebApi.Classes.StaticClasses
         public static int UserSysID { get; set; }
         public static int UsercusID { get; set; }
         public static string UserShopUserGroupID { get; set; }
+        public static string UserAgent { get; set; }
         public static string UserSysName { get; set; }
         public static List<string> FunctionList;
     }

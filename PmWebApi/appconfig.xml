@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <AppConfig>
 	<Connection datasource ="121.201.33.122,3183">
-		<Modeler username ="APSUSER_RATETEC" password="Szrate8520++----++" security="Persist Security Info=True" muti ="MultiSubnetFailover=True" >Mod_test</Modeler>
+		<Modeler username ="APSUSER_RATETEC" password="Szrate8520++----++" security="Persist Security Info=True" muti ="MultiSubnetFailover=True" >mod_test</Modeler>
 		<Schedule username ="APSUSER_RATETEC" password="Szrate8520++----++" security="Persist Security Info=True" muti ="MultiSubnetFailover=True" >B_S_T</Schedule>
 		<Pmcontrol username ="APSUSER_RATETEC" password="Szrate8520++----++" security="Persist Security Info=True" muti ="MultiSubnetFailover=True" >ctrl_test</Pmcontrol>
 	</Connection>
@@ -10,7 +10,7 @@
 		<ViewSysCol name ="comment"/>
 	</LoginSettings>
 	<UserAppConfig>
-		<VersionCode name ="2.001.006"/>
+		<VersionCode name ="2.001.007"/>
 		<VersionGuid name ="76B13F94C681145E92639B922E26B8D5"/>
 		<VersionMsg name="新增修改用户信息功能."/>
 	</UserAppConfig>

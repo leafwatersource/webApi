@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace PmWebApi.Models
 {
@@ -19,42 +20,65 @@ namespace PmWebApi.Models
             da.Dispose();
             cmd.Connection.Close();
 
+            //获取现有设备上的工单数据
+            cmd.CommandText = "SELECT pmresname,pmopname,workid FROM User_MesDailyData WHERE pmresname = '" + resname + "' and datatype ='P'  and taskfinishstate < 4 and dailydate = '" + DateTime.Now.Date + "' and dayshift = '" + dayshift + "'";
+            da = new SqlDataAdapter(cmd);
+            DataTable dtthisrestasks = new DataTable();
+            da.Fill(dtthisrestasks);
+            da.Dispose();
+            cmd.Connection.Close();
+
             //对拉取过来的数据去重
             DataTable newdata = data.Clone();
-            string thisworkid, nextworkid;
-            string thisproduct, nextproduct;
-            string thisresname, nextresname;
-            string thisopname, nextopname;
-            for (int i = 0; i < data.Rows.Count -1; i++)
+            string thisworkid, preworkid = string.Empty;
+            string thisproduct, preproduct = string.Empty;
+            string thisresname, preresname = string.Empty;
+            string thisopname, preopname = string.Empty;
+            for (int i = 0; i < data.Rows.Count; i++)
             {
-                if(data.Rows[i]["pmresname"].ToString() == resname && Convert.ToDateTime(data.Rows[i]["mesdailydate"]).Date == DateTime.Now.Date && Convert.ToInt32(data.Rows[i]["dayshift"]) == dayshift)
+                if(i == 0)
                 {
+                    preworkid = data.Rows[i]["workid"].ToString();
+                    preproduct = data.Rows[i]["productid"].ToString();
+                    preresname = data.Rows[i]["pmresname"].ToString();
+                    preopname = data.Rows[i]["pmopname"].ToString();
                     continue;
                 }
-                thisworkid = data.Rows[i]["workid"].ToString();
-                nextworkid = data.Rows[i + 1]["workid"].ToString();
-                if(thisworkid == nextworkid)
+                else
                 {
-                    //工单一样,比较产品是否一样
+                    thisworkid = data.Rows[i]["workid"].ToString();
                     thisproduct = data.Rows[i]["productid"].ToString();
-                    nextproduct = data.Rows[i + 1]["productid"].ToString();
-
-                    if(thisproduct == nextproduct)
+                    thisresname = data.Rows[i]["pmresname"].ToString();
+                    thisopname = data.Rows[i]["pmopname"].ToString();
+                    DataRow[] finddr = dtthisrestasks.Select("pmresname = '" + data.Rows[i]["pmresname"].ToString() + "' and pmopname = '"
+                    + data.Rows[i]["pmopname"].ToString() + "' and  workid = '" + data.Rows[i]["workid"].ToString() + "'");
+                    if (finddr.Count() > 0)
                     {
-                        //产品一样 比较设备是否一样
-                        thisresname = data.Rows[i]["pmresname"].ToString();
-                        nextresname = data.Rows[i + 1]["pmresname"].ToString();
-                        if(thisresname == nextresname)
+                        continue;
+                    }
+                    if (thisworkid == preworkid)
+                    {
+                        //工单一样,比较产品是否一样
+                        if (thisproduct == preproduct)
                         {
-                            //如果设备一样,比较工序是否一样
-                            thisopname = data.Rows[i]["pmopname"].ToString();
-                            nextopname = data.Rows[i + 1]["pmopname"].ToString();
-                            if(thisopname == nextopname)
+                            //产品一样 比较设备是否一样
+                            if (thisresname == preresname)
                             {
-                                continue;
+                                //如果设备一样,比较工序是否一样
+                                if (thisopname == preopname)
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    DataRow dr = newdata.NewRow();
+                                    dr.ItemArray = data.Rows[i].ItemArray;
+                                    newdata.Rows.Add(dr);
+                                }
                             }
                             else
                             {
+                                //设备不一样 添加
                                 DataRow dr = newdata.NewRow();
                                 dr.ItemArray = data.Rows[i].ItemArray;
                                 newdata.Rows.Add(dr);
@@ -62,7 +86,7 @@ namespace PmWebApi.Models
                         }
                         else
                         {
-                            //设备不一样 添加
+                            //如果产品不一样,添加
                             DataRow dr = newdata.NewRow();
                             dr.ItemArray = data.Rows[i].ItemArray;
                             newdata.Rows.Add(dr);
@@ -70,18 +94,15 @@ namespace PmWebApi.Models
                     }
                     else
                     {
-                        //如果产品不一样,添加
+                        //工单不一样,直接添加
                         DataRow dr = newdata.NewRow();
                         dr.ItemArray = data.Rows[i].ItemArray;
                         newdata.Rows.Add(dr);
                     }
-                }
-                else
-                {
-                    //工单不一样,直接添加
-                    DataRow dr = newdata.NewRow();
-                    dr.ItemArray = data.Rows[i].ItemArray;
-                    newdata.Rows.Add(dr);
+                    preworkid = thisworkid;
+                    preproduct = thisproduct;
+                    preresname = thisresname;
+                    preopname = thisopname;
                 }
             }
             DataView dv = newdata.DefaultView;

@@ -21,6 +21,7 @@ namespace PmWebApi.Classes
         public  string UserShopUserGroupID { get; set; }
         public  string UserSysName { get; set; }
         public string AlertMessage { get; set; }
+        public string UserAgent { get; set; }
         public List<string> FunctionList { get; set; }
         public static Dictionary<string, string> LogedUserInfo ;
     }

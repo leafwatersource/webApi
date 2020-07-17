@@ -22,7 +22,22 @@ namespace PmWebApi.Models
             da.Fill(sysresdata);
             da.Dispose();
             sysresdata.Columns.Add("dayshift");
+            sysresdata.Columns.Add("ResEventType");
+            sysresdata.Columns.Add("LockedStartTime");
+            sysresdata.Columns.Add("LockedEndTime");
+            sysresdata.Columns.Add("LockedPerson");
+            sysresdata.Columns.Add("ResEventComment");
             DataTable canresdata = sysresdata.Clone();
+            cmd.Connection.Close();
+
+            cmd = PmConnections.SchCmd();
+            cmd.CommandText = "SELECT * FROM wapResLockState";
+            da = new SqlDataAdapter(cmd);
+            DataTable dtlockres = new DataTable();
+            da.Fill(dtlockres);
+            da.Dispose();
+            cmd.Connection.Close();
+
             foreach (DataRow item in userdata.Rows)
             {
                 DataRow[] rows = sysresdata.Select("username = '" + item[0].ToString() + "'");
@@ -30,8 +45,26 @@ namespace PmWebApi.Models
                 {
                     foreach (DataRow selectrows in rows)
                     {
+                        string resname = selectrows["resourceName"].ToString();
+                        DataRow[] resstate = dtlockres.Select("ResName = '" + resname + "'");
+                        if (resstate.Count() > 0)
+                        {
+                            selectrows["ResEventType"] = resstate[0]["ResEventType"].ToString();
+                            selectrows["LockedStartTime"] = resstate[0]["LockedStartTime"].ToString();
+                            selectrows["LockedEndTime"] = resstate[0]["LockedEndTime"].ToString();
+                            selectrows["LockedPerson"] = resstate[0]["LockedPerson"].ToString();
+                            selectrows["ResEventComment"] = resstate[0]["ResEventComment"].ToString();
+                        }
+                        else
+                        {
+                            selectrows["ResEventType"] = "Y";
+                            selectrows["LockedStartTime"] = "";
+                            selectrows["LockedEndTime"] = "";
+                            selectrows["LockedPerson"] = "";
+                            selectrows["ResEventComment"] = "";
+                        }
                         DataRow addrows = canresdata.NewRow();
-                        selectrows["dayshift"] = PublicFunc.GetDayShift(selectrows["resourceName"].ToString());
+                        selectrows["dayshift"] = PublicFunc.GetDayShift(resname);
                         addrows.ItemArray = selectrows.ItemArray;
                         canresdata.Rows.Add(addrows);
                     }

@@ -120,6 +120,25 @@ namespace PmWebApi.Classes.StaticClasses
             return sysname;
         }
         /// <summary>
+        /// 获取用户名称
+        /// </summary>
+        /// <param name="empID">用户ID</param>
+        /// <returns>用户名称</returns>
+        public static string GetEmpName(int empID)
+        {
+            SqlCommand cmd = PmConnections.ModCmd();
+            cmd.CommandText = "SELECT empName FROM wapEmpList WHERE empID = '" + empID + "'";
+            SqlDataReader rd = cmd.ExecuteReader();
+            string empname = string.Empty;
+            if (rd.Read())
+            {
+                empname = rd[0].ToString();
+            }
+            rd.Close();
+            cmd.Connection.Close();
+            return empname;
+        }
+        /// <summary>
         /// 转换数据库中空值的表
         /// </summary>
         /// <param name="table">空表获得这条数据的数据格式</param>
@@ -287,7 +306,7 @@ namespace PmWebApi.Classes.StaticClasses
                     return DateTime.MinValue;
                 }
             }
-            
+
         }
         /// <summary>
         /// 获取当前设备的DayShift
@@ -297,10 +316,11 @@ namespace PmWebApi.Classes.StaticClasses
         public static int GetDayShift(string resName)
         {
             SqlCommand cmd = PmConnections.SchCmd();
-            cmd.CommandText = "SELECT Distinct(pmResName),shiftStartEndTime,dayShift FROM User_MesDailyData where sysID = " + PmUser.UserSysID + " and pmResName = '" + resName + "' and  mesdailydate ='" + GetDailyDate(resName).Date + "' order by dayShift";
+            cmd.CommandText = "SELECT pmResName,shiftStartEndTime,dayShift FROM User_MesDailyData where sysID = " + PmUser.UserSysID + " and pmResName = '" + resName + "' and  mesdailydate ='" + GetDailyDate(resName).Date + "' order by dayShift";
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             DataTable dtshift = new DataTable();
             da.Fill(dtshift);
+            dtshift = dtshift.DefaultView.ToTable(true);
             cmd.Connection.Close();
             if (dtshift.Rows.Count > 0)
             {
@@ -317,7 +337,7 @@ namespace PmWebApi.Classes.StaticClasses
                     for (int i = 0; i < dtshift.Rows.Count; i++)
                     {
                         DataRow dr = dtstarthours.NewRow();
-                        if(i< dtshift.Rows.Count  - 1)
+                        if (i < dtshift.Rows.Count - 1)
                         {
                             dr[0] = dtshift.Rows[i]["dayShift"];
                             dr[1] = dtshift.Rows[i]["shiftStartEndTime"].ToString().Split(',')[0].Split(':')[0];
@@ -328,7 +348,7 @@ namespace PmWebApi.Classes.StaticClasses
                             dr[0] = dtshift.Rows[i]["dayShift"];
                             dr[1] = dtshift.Rows[i]["shiftStartEndTime"].ToString().Split(',')[0].Split(':')[0];
                             dr[2] = dtshift.Rows[0]["shiftStartEndTime"].ToString().Split(',')[0].Split(':')[0];
-                        }                      
+                        }
                         dtstarthours.Rows.Add(dr);
                     }
                     int nowhour = DateTime.Now.Hour;
@@ -364,12 +384,21 @@ namespace PmWebApi.Classes.StaticClasses
                     }
                     return dayshift;
 
-                }                
+                }
             }
             else
             {
                 return -1;
             }
+        }
+        public static void WriteUserLog(string userempid, string ip, string model, string logmessage, string webinfo)
+        {
+            SqlCommand cmd = PmConnections.CtrlCmd();
+            string empname = PublicFunc.GetEmpName(Convert.ToInt32(userempid));
+            cmd.CommandText = "INSERT INTO wapUserlog (empid,empname,ipAddress,model,logTime,logMessage,webinfomation) VALUES ('"
+                + userempid + "','" + empname + "','" + ip + "','" + model + "','" + DateTime.Now + "','" + logmessage + "','" + webinfo + "')";
+            cmd.ExecuteNonQuery();
+            cmd.Connection.Close();
         }
     }
 }

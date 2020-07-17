@@ -37,5 +37,10 @@ namespace PmWebApi.Classes
         public DateTime JobDemandDay { get; set; }
         public bool Ajustment { get; set; }
         public double UnitPrice { get; set; }
+        public DateTime MesStartTime { get; set; }
+        public DateTime MesEndTime { get; set; }
+        public DateTime MesSetupStartTime { get; set; }
+        public DateTime MesSetupEndTime { get; set; }
+        public string UserComment { get; set; }
     }
 }

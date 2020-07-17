@@ -64,7 +64,12 @@ namespace PmWebApi.Models
                         JobDemandDay = Convert.ToDateTime(checkeddata["jobDemandDay"]),
                         ScrappedQty = Convert.ToDouble(checkeddata["ScrappedQty"]),
                         Ajustment = Convert.ToBoolean(checkeddata["adjustment"]),
-                        UnitPrice = Convert.ToDouble(checkeddata["unitPrice"])
+                        UnitPrice = Convert.ToDouble(checkeddata["unitPrice"]),
+                        MesSetupStartTime = Convert.ToDateTime(checkeddata["setupStartTime"]),
+                        MesSetupEndTime = Convert.ToDateTime(checkeddata["setupEndTime"]),
+                        MesStartTime = Convert.ToDateTime(checkeddata["startDateTime"]),
+                        MesEndTime = Convert.ToDateTime(checkeddata["endDateTime"]),
+                        UserComment = checkeddata["userComment"].ToString()
                     };
                     LiReturnData.Add(li);
 

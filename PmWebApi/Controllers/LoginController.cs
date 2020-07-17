@@ -24,7 +24,8 @@ namespace PmWebApi.Controllers
             Mlogin mlogin = new Mlogin
             {
                 //这个信息只能在controller里获取,model里不能获取
-                UserIP = Request.HttpContext.Connection.RemoteIpAddress.ToString()
+                UserIP = Request.HttpContext.Connection.RemoteIpAddress.ToString(),
+                UserAgent = Request.Headers["User-Agent"].ToString()
             };
             MD5 md5 = MD5.Create();
             //PMStaticModels.UserModels.PMUser.UserSysID
@@ -63,7 +64,8 @@ namespace PmWebApi.Controllers
             Mlogin mlogin = new Mlogin
             {
                 //这个信息只能在controller里获取,model里不能获取
-                UserIP = Request.HttpContext.Connection.RemoteIpAddress.ToString()
+                UserIP = Request.HttpContext.Connection.RemoteIpAddress.ToString(),
+                UserAgent = Request.Headers["User-Agent"].ToString()
             };
             MD5 md5 = MD5.Create();
             //PMStaticModels.UserModels.PMUser.UserSysID
@@ -85,6 +87,7 @@ namespace PmWebApi.Controllers
                     Response.Cookies.Append("MD5", PublicFunc.GetMd5("ADMIN" + Guid.NewGuid().ToString()), new CookieOptions() { IsEssential = true });
                 }
             }
+            PublicFunc.WriteUserLog(PmUser.EmpID.ToString(), mlogin.UserIP, "强制登出", "用户选择强制登出", mlogin.UserAgent);
             return cLogin;
         }
     }

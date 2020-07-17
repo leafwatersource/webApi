@@ -43,6 +43,7 @@ namespace PmWebApi.Models
         /// <returns>Login信息类Clogin</returns>
         readonly int pwderrTimes = 3; //用于记录密码错误次数
         public string UserIP { get; set; }
+        public string UserAgent { get; set; }
         public CLogin Login(string userName, string userPass)
         {
             if(CUserInfo.LogedUserInfo == null)
@@ -72,6 +73,7 @@ namespace PmWebApi.Models
                 PmUser.UserSysName = PublicFunc.GetSysName(PmUser.UserSysID);
                 PmUser.UserIpAdress = UserIP;
                 PmUser.UserPass = userPass;
+                PmUser.UserAgent = UserAgent;
             }           
             CLogin login = new CLogin();
             //查询是否有这个用户名
@@ -171,6 +173,7 @@ namespace PmWebApi.Models
                                 cmd.CommandText = "UPDATE wapUserstate SET userIpaddress = '" + PmUser.UserIpAdress + "',onLine = '1',errorTimes='0',errorTime='" + DateTime.Now + "',message = '登录成功',userGuid = '" + PmUser.UserGuid + "'WHERE empid = '" + GetUpdateVal() + "'";
                                 cmd.ExecuteNonQuery();
                                 cmd.Connection.Close();
+                                PublicFunc.WriteUserLog(PmUser.EmpID.ToString(), UserIP, "用户登录", "登陆成功.", UserAgent);
                             }
                             else
                             {
@@ -182,7 +185,8 @@ namespace PmWebApi.Models
                                 cmd = PmConnections.CtrlCmd();
                                 cmd.CommandText = "UPDATE wapUserstate SET userIpaddress = '" + PmUser.UserIpAdress + "',onLine = '0',errorTimes='" + errortimes + "',errorTime='" + DateTime.Now + "',message = '密码错误',userGuid = '" + PmUser.UserGuid + "'WHERE empid = '" + GetUpdateVal() + "'";
                                 cmd.ExecuteNonQuery();
-                                cmd.Connection.Close();                              
+                                cmd.Connection.Close();
+                                PublicFunc.WriteUserLog(PmUser.EmpID.ToString(), UserIP, "用户登录", "密码错误,错误次数:"+ errortimes, UserAgent);
                             }
                         }
                         else
@@ -250,6 +254,7 @@ namespace PmWebApi.Models
                                     cmd.CommandText = "UPDATE wapUserstate SET userIpaddress = '" + PmUser.UserIpAdress + "',onLine = '1',errorTimes='0',errorTime='" + DateTime.Now + "',message = '登录成功',userGuid = '" + PmUser.UserGuid + "' WHERE empid = '" + GetUpdateVal() + "'";
                                     cmd.ExecuteNonQuery();
                                     cmd.Connection.Close();
+                                    PublicFunc.WriteUserLog(PmUser.EmpID.ToString(), UserIP, "用户登录", "登陆成功.", UserAgent);
                                 }
                                 //用户密码错误记录密码错误次数
                                 else
@@ -330,6 +335,7 @@ namespace PmWebApi.Models
                                         {
                                             CUserInfo.LogedUserInfo.Add(PmUser.UserName, PmUser.UserGuid);
                                         }
+                                        PublicFunc.WriteUserLog(PmUser.EmpID.ToString(), UserIP, "用户登录", "登陆成功.", UserAgent);
                                     }
                                     else
                                     {
@@ -342,6 +348,7 @@ namespace PmWebApi.Models
                                           + PmUser.UserName + "','" + PmUser.UserPass + "','" + PmUser.UserIpAdress + "','0','1','" + DateTime.Now + "','密码错误','" + PmUser.UserGuid + "')";
                                         cmd.ExecuteNonQuery();
                                         cmd.Connection.Close();
+                                        PublicFunc.WriteUserLog(PmUser.EmpID.ToString(), UserIP, "用户登录", "密码错误,错误次数:1", UserAgent);
                                     };
 
                                 }
@@ -350,6 +357,7 @@ namespace PmWebApi.Models
                             {
                                 login.LoginState = 0;
                                 login.Message = "用户被锁定，请在" + (300 - (DateTime.Now - lasterrortime).TotalSeconds).ToString("0") + "秒后登陆.";
+                                PublicFunc.WriteUserLog(PmUser.EmpID.ToString(), UserIP, "用户锁定", "用户由于密码错误超过3次,用户锁定.", UserAgent);
                             }                           
                         }
                     }
@@ -418,7 +426,8 @@ namespace PmWebApi.Models
                         cmd.CommandText = "INSERT wapUserstate (empID,empName,userPass,userIpaddress,onLine,errorTimes,errorTime,message,userGuid) VALUES ('" + GetUpdateVal() + "','"
                             + PmUser.UserName + "','"+PmUser.UserPass+"','" + PmUser.UserIpAdress + "','1','0','" + DateTime.Now + "','登录成功','" + PmUser.UserGuid + "')";
                         cmd.ExecuteNonQuery();
-                        cmd.Connection.Close();       
+                        cmd.Connection.Close();
+                        PublicFunc.WriteUserLog(PmUser.EmpID.ToString(), UserIP, "用户登录", "登陆成功.", UserAgent);
                     }
                     else
                     {
@@ -431,6 +440,7 @@ namespace PmWebApi.Models
                           + PmUser.UserName + "','"+PmUser.UserPass+"','" + PmUser.UserIpAdress + "','0','1','" + DateTime.Now + "','密码错误','" + PmUser.UserGuid + "')";
                         cmd.ExecuteNonQuery();
                         cmd.Connection.Close();
+                        PublicFunc.WriteUserLog(PmUser.EmpID.ToString(), UserIP, "用户登录", "密码错误,错误次数:1", UserAgent);
                     }
                 }
             }

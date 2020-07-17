@@ -36,10 +36,10 @@ namespace PmWebApi.Models
             else if( writetype == 2)
             {
                 cmd.CommandText = @"INSERT INTO wapMesEventRec 
-                (PMUID,EventType,EventName,EventMessage,EventTime,ResName,WorkID,OpName,ProductID,Description,JobQty,FinishedQty,MesDate,MesOperator,FailedQty,ScrappedQty,DayShift,PlanQty,OrderUID) VALUES ('" +
+                (PMUID,EventType,EventName,EventMessage,EventTime,ResName,WorkID,OpName,ProductID,Description,JobQty,FinishedQty,MesDate,MesOperator,FailedQty,ScrappedQty,DayShift,PlanQty,OrderUID,MesAttr1) VALUES ('" +
                 maxUID + "','R','Report','报工','" + DateTime.Now + "','" + edata.MesResName + "','" + edata.WorkID + "','" + edata.MesOpName + "','" + edata.ProductID + "','" + edata.ItemDesp +
                 "','" + edata.JobQty + "','" + edata.FinishedQty + "','" + DateTime.Now.Date + "','" + edata.MesOperator + "','" + edata.FailedQty + "','" + edata.ScrappedQty + "','" + edata.DayShift +
-                "','" + edata.Plannedqty + "','" + edata.OrderUID + "')";
+                "','" + edata.Plannedqty + "','" + edata.OrderUID + "','" + edata.UserComment + "')";
             }
             else if(writetype == 3)
             {

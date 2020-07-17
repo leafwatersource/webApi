@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 
 namespace PmWebApi.Models
 {
@@ -63,19 +62,13 @@ namespace PmWebApi.Models
             DataTable dtmesdata = new DataTable();
             da.Fill(dtmesdata);
             da.Dispose();
-            cmd.Connection.Close();
-            //public string MesStartTime { get; set; }
-            //public string MesEndTime { get; set; }
-            //public double MesHours { get; set; }
-            //public double MesSetupHours { get; set; }
-            //public string MesSetupStartTime { get; set; }
-            //public string MesSetupEndTime { get; set; }          
+            cmd.Connection.Close();      
             //计算数据
             COpFinish returndata = new COpFinish
             {
                 PlanStartTime = PublicFunc.ForMatDateTimeStr(planstarttime, 1),
                 PlanEndTime = PublicFunc.ForMatDateTimeStr(planendtime, 1),
-                PlannedHours = plannedhours*3600,
+                PlannedHours = plannedhours * 3600,
                 PlannedQty = plannedqty,
                 PlanSetupStartTime = PublicFunc.ForMatDateTimeStr(plansetupstarttime, 1),
                 PlanSetupEndTime = PublicFunc.ForMatDateTimeStr(plansetupendtime, 1),
@@ -109,8 +102,8 @@ namespace PmWebApi.Models
                     }
                 }
             }
-            returndata.MesSetupHours = Convert.ToDouble((messetuphours).ToString("0.00"));
-            returndata.MesHours = Convert.ToDouble((meshours).ToString("0.00"));
+            returndata.MesSetupHours = Convert.ToDouble(messetuphours.ToString("0.00"));
+            returndata.MesHours = Convert.ToDouble(meshours.ToString("0.00"));
             return returndata;
         }
     }

@@ -14,6 +14,7 @@ namespace PmWebApi.Models
             SqlDataReader rd = cmd.ExecuteReader();
             if(rd.Read())
             {
+                //可能存在BUG
                 string serverUserguid = rd[0].ToString();
                 if(serverUserguid == localGuid)
                 {
@@ -31,6 +32,7 @@ namespace PmWebApi.Models
                     cUser.UserShopUserGroupID = PmUser.UserShopUserGroupID;
                     cUser.UserSysID = PmUser.UserSysID;
                     cUser.UserSysName = PmUser.UserSysName;
+                    cUser.UserAgent = PmUser.UserAgent;
                 }
                 else
                 {

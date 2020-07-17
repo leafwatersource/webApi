@@ -42,7 +42,7 @@ namespace PmWebApi.Models
                
                 cmd.CommandText = "UPDATE User_MesDailyData SET mesResName = '" + mesEvent.MesResName + "', mesOpName = '" + mesEvent.MesOpName + "',finishedQty = finishedQty + '" + (mesEvent.FinishedQty + mesEvent.FailedQty) +
                     "', failQty = failQty + '" + mesEvent.FailedQty + "', endDateTime = '" + mesEvent.ReportTime + "', updateDateTime = '" + DateTime.Now + "', bgPerson = '" + mesEvent.MesOperator +
-                    "',ScrappedQty = ScrappedQty + '" + mesEvent.ScrappedQty + "', TaskFinishState = '" +taskfinishedstate + "' WHERE UID = '" + mesEvent.OrderUID + "'";
+                    "',ScrappedQty = ScrappedQty + '" + mesEvent.ScrappedQty + "', TaskFinishState = '" + taskfinishedstate + "',UserComment = '" + mesEvent.UserComment + " ' WHERE UID = '" + mesEvent.OrderUID + "'";
                 cmd.ExecuteNonQuery();
                 cmd.CommandText = "UPDATE User_MesDailyData SET AllFinishedQty = AllFinishedQty + '" + (mesEvent.FinishedQty + mesEvent.FailedQty) + "', updateDateTime ='" + DateTime.Now + "' WHERE workID = '" + mesEvent.WorkID +
                     "' and productID = '" + mesEvent.ProductID + "' and pmOpName = '" + mesEvent.PmOpName + "'";
