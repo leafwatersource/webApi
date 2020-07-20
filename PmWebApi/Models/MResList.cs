@@ -8,6 +8,25 @@ namespace PmWebApi.Models
 {
     public class MResList
     {
+        public string GetDefaultRes(string empid)
+        {
+            SqlCommand cmd = PmConnections.ModCmd();
+            string schdbname = PmConnections.SchCmd().Connection.Database;
+            cmd.CommandText = "SELECT a.resourceName  FROM  wapUser_ResPMS a,wapEmpUserMap b,wapEmpList c  where  (a.userName = b.userName and b.empID = c.empID and c.empID = " + empid + ") and (a.resourceName not in (select resname from " + schdbname + ".dbo.wapResLockState))";
+            SqlDataReader rd = cmd.ExecuteReader();
+            string defresname;
+            if(rd.Read())
+            {
+                defresname = rd[0].ToString();
+            }
+            else
+            {
+                defresname = string.Empty;
+            }
+            rd.Close();
+            cmd.Connection.Close();
+            return defresname;
+        }
         public DataTable GetResList(string sysid)
         {
             SqlCommand cmd = PmConnections.ModCmd();
@@ -58,10 +77,10 @@ namespace PmWebApi.Models
                         else
                         {
                             selectrows["ResEventType"] = "Y";
-                            selectrows["LockedStartTime"] = "";
-                            selectrows["LockedEndTime"] = "";
-                            selectrows["LockedPerson"] = "";
-                            selectrows["ResEventComment"] = "";
+                            selectrows["LockedStartTime"] = string.Empty;
+                            selectrows["LockedEndTime"] = string.Empty;
+                            selectrows["LockedPerson"] = string.Empty;
+                            selectrows["ResEventComment"] = string.Empty;
                         }
                         DataRow addrows = canresdata.NewRow();
                         selectrows["dayshift"] = PublicFunc.GetDayShift(resname);

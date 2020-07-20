@@ -23,7 +23,7 @@ namespace PmWebApi.Models
         public void SetResUnused(string resName,string useType)
         {
             SqlCommand cmd = PmConnections.SchCmd();
-            cmd.CommandText = "DELETE FROM wapResLockState WHERE ResName = '" + resName + " and ResEventType = '" + useType + "'";
+            cmd.CommandText = "DELETE FROM wapResLockState WHERE ResName = '" + resName + "' and ResEventType = '" + useType + "'";
             cmd.ExecuteNonQuery();
             cmd.Connection.Close();
         }

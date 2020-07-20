@@ -14,7 +14,7 @@ namespace PmWebApi.Models
     {
         public CLogin ForceOut(string userName,string userpass)
         {
-
+            PublicFunc.DeleteUserResLock(GetUpdateVal());
             SqlCommand  cmd = PmConnections.CtrlCmd();
             cmd.CommandText = "SELECT online FROM wapUserstate WHERE empid = '" + GetUpdateVal() + "'";
             SqlDataReader rd = cmd.ExecuteReader();

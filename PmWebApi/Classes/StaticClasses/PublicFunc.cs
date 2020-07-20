@@ -81,10 +81,18 @@ namespace PmWebApi.Classes.StaticClasses
             }
             else
             {
-                cmd.CommandText = "SELECT MAX(" + key + ") AS maxid FROM " + tablename;
-                rd = cmd.ExecuteReader(0);
+                cmd.CommandText = "SELECT MAX(" + key + ") AS maxid FROM " + tablename;                
+                rd = cmd.ExecuteReader();
+                int maxid;
+                if (rd.Read())
+                {
+                    maxid = Convert.ToInt32(rd[0]) + 1;
+                }
+                else
+                {
+                    maxid = 1;
+                }
                 rd.Read();
-                int maxid = Convert.ToInt32(rd[0]) + 1;
                 return maxid;
             }
         }
@@ -391,12 +399,29 @@ namespace PmWebApi.Classes.StaticClasses
                 return -1;
             }
         }
+        /// <summary>
+        /// 写入LOG
+        /// </summary>
+        /// <param name="userempid">用户id</param>
+        /// <param name="ip">ip地址</param>
+        /// <param name="model">事件类型</param>
+        /// <param name="logmessage">事件详情</param>
+        /// <param name="webinfo">用户手机版本</param>
         public static void WriteUserLog(string userempid, string ip, string model, string logmessage, string webinfo)
         {
             SqlCommand cmd = PmConnections.CtrlCmd();
             string empname = PublicFunc.GetEmpName(Convert.ToInt32(userempid));
             cmd.CommandText = "INSERT INTO wapUserlog (empid,empname,ipAddress,model,logTime,logMessage,webinfomation) VALUES ('"
                 + userempid + "','" + empname + "','" + ip + "','" + model + "','" + DateTime.Now + "','" + logmessage + "','" + webinfo + "')";
+            cmd.ExecuteNonQuery();
+            cmd.Connection.Close();
+        }
+
+        public static void DeleteUserResLock(string userempid)
+        {
+            string empname = GetEmpName(Convert.ToInt32(userempid));
+            SqlCommand cmd = PmConnections.SchCmd();
+            cmd.CommandText = "DELETE FROM wapResLockState WHERE LockedPerson = '" + empname + "'";
             cmd.ExecuteNonQuery();
             cmd.Connection.Close();
         }
